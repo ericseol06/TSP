@@ -41,9 +41,9 @@ except ImportError as _macd_import_err:
 # =====================================================================
 # CONFIGURATION
 # =====================================================================
-SENDER_EMAIL = os.getenv("SENDER_EMAIL")
-SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
-RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
+SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD")
+RECIPIENT_EMAIL = os.environ.get("RECIPIENT_EMAIL")
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
@@ -661,18 +661,28 @@ def send_combined_email(report_date, section_htmls, images):
             img.add_header("Content-Disposition", "inline", filename=filename)
             msg.attach(img)
 
+# Ensure required fields are present
+if not SENDER_EMAIL or not SENDER_PASSWORD or not RECIPIENT_EMAIL:
+  raise ValueError(
+      "Missing required email credentials in environment variables."
+  )
+
+# Create a secure SSL context
+context = ssl.create_default_context()
+
 try:
-    # Connect to Gmail on port 587
-    server = smtplib.SMTP("smtp.gmail.com", 587, timeout=30)
+  # Port 587 with explicit STARTTLS
+  with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as server:
     server.ehlo()
-    server.starttls()  # Secure the connection
+    server.starttls(context=context)  # Secure the connection
     server.ehlo()
-    server.login(sender_email, sender_password)
-    server.sendmail(sender_email, recipient_email, msg.as_string())
-    server.quit()
-    print("[+] Email sent successfully!")
+    server.login(SENDER_EMAIL, SENDER_PASSWORD)
+    server.sendmail(SENDER_EMAIL, RECIPIENT_EMAIL, msg.as_string())
+
+  print("[+] Email sent successfully!")
+
 except Exception as e:
-    print(f"[-] Failed to send email: {e}")
+  print(f"[-] Failed to send email: {e}")
 
 def main():
     print("[*] Running TSP Combined Daily Report...")
