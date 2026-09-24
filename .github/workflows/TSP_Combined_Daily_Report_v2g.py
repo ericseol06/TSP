@@ -41,11 +41,42 @@ except ImportError as _macd_import_err:
 # =====================================================================
 # CONFIGURATION
 # =====================================================================
+# Read credentials from environment variables
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
 SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD")
 RECIPIENT_EMAIL = os.environ.get("RECIPIENT_EMAIL")
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
+
+if not SENDER_EMAIL or not SENDER_PASSWORD or not RECIPIENT_EMAIL:
+  raise ValueError("Missing required email credentials in GitHub environment.")
+
+# Create an explicit default SSL context
+context = ssl.create_default_context()
+
+try:
+  print("[*] Connecting to Gmail SMTP server...")
+  # Use SSL directly over Port 465 (more resilient for large attachments on GitHub Actions)
+  with smtplib.SMTP_SSL(
+      "smtp.gmail.com", 465, context=context, timeout=60
+  ) as server:
+    server.login(SENDER_EMAIL, SENDER_PASSWORD)
+    # Convert message to string and send
+    server.sendmail(SENDER_EMAIL, RECIPIENT_EMAIL, msg.as_string())
+
+  print("[+] Email sent successfully!")
+
+except Exception as e:
+  print(f"[-] Primary connection (465) failed: {e}. Retrying on Port 587...")
+  try:
+    # Fallback to Port 587 with STARTTLS
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=60) as server:
+      server.ehlo()
+      server.starttls(context=context)
+      server.ehlo()
+      server.login(SENDER_EMAIL, SENDER_PASSWORD)
+      server.sendmail(SENDER_EMAIL, RECIPIENT_EMAIL, msg.as_string())
+    print("[+] Email sent successfully via fallback port!")
+  except Exception as fallback_error:
+    print(f"[-] Email failed on both ports: {fallback_error}")
 
 PROXIES = {
     "C Fund": "IVV",
@@ -660,29 +691,6 @@ def send_combined_email(report_date, section_htmls, images):
             img.add_header("Content-ID", f"<{cid}>")
             img.add_header("Content-Disposition", "inline", filename=filename)
             msg.attach(img)
-
-# Ensure required fields are present
-if not SENDER_EMAIL or not SENDER_PASSWORD or not RECIPIENT_EMAIL:
-  raise ValueError(
-      "Missing required email credentials in environment variables."
-  )
-
-# Create a secure SSL context
-context = ssl.create_default_context()
-
-try:
-  # Port 587 with explicit STARTTLS
-  with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as server:
-    server.ehlo()
-    server.starttls(context=context)  # Secure the connection
-    server.ehlo()
-    server.login(SENDER_EMAIL, SENDER_PASSWORD)
-    server.sendmail(SENDER_EMAIL, RECIPIENT_EMAIL, msg.as_string())
-
-  print("[+] Email sent successfully!")
-
-except Exception as e:
-  print(f"[-] Failed to send email: {e}")
 
 def main():
     print("[*] Running TSP Combined Daily Report...")
