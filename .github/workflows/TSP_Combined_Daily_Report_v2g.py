@@ -43,7 +43,7 @@ except ImportError as _macd_import_err:
 # =====================================================================
 # Read credentials from environment variables
 SENDER_EMAIL = "ericseol06@gmail.com"
-SENDER_PASSWORD = "whpp vpge wjdt wwyq"  # App Password "iwkk ylcm hjbj qwjf"
+SENDER_PASSWORD = "iwkkylcmhjbjqwjf"
 RECIPIENT_EMAIL = "ericseol06@gmail.com"
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
