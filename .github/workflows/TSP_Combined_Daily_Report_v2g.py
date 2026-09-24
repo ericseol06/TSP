@@ -41,9 +41,9 @@ except ImportError as _macd_import_err:
 # =====================================================================
 # CONFIGURATION
 # =====================================================================
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "your_email@gmail.com")
-SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD", "your_app_password_here")
-RECIPIENT_EMAIL = os.environ.get("RECIPIENT_EMAIL", "your_email@gmail.com")
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
+RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL")
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
