@@ -661,17 +661,18 @@ def send_combined_email(report_date, section_htmls, images):
             img.add_header("Content-Disposition", "inline", filename=filename)
             msg.attach(img)
 
-    try:
-        context = ssl.create_default_context()
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=30) as server:
-            server.ehlo()
-            server.starttls(context=context)
-            server.ehlo()
-            server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            server.sendmail(SENDER_EMAIL, RECIPIENT_EMAIL, msg.as_string())
-        print(f"[+] Combined report sent successfully to {RECIPIENT_EMAIL}!")
-    except Exception as e:
-        print(f"[-] Failed to send email: {e}")
+try:
+    # Connect to Gmail on port 587
+    server = smtplib.SMTP("smtp.gmail.com", 587, timeout=30)
+    server.ehlo()
+    server.starttls()  # Secure the connection
+    server.ehlo()
+    server.login(sender_email, sender_password)
+    server.sendmail(sender_email, recipient_email, msg.as_string())
+    server.quit()
+    print("[+] Email sent successfully!")
+except Exception as e:
+    print(f"[-] Failed to send email: {e}")
 
 def main():
     print("[*] Running TSP Combined Daily Report...")
