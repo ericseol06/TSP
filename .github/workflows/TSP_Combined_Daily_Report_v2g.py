@@ -42,9 +42,11 @@ except ImportError as _macd_import_err:
 # CONFIGURATION
 # =====================================================================
 # Read credentials from environment variables
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
-SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD")
-RECIPIENT_EMAIL = os.environ.get("RECIPIENT_EMAIL")
+SENDER_EMAIL = "ericseol06@gmail.com"
+SENDER_PASSWORD = "whpp vpge wjdt wwyq"  # App Password "iwkk ylcm hjbj qwjf"
+RECIPIENT_EMAIL = "ericseol06@gmail.com"
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
 
 if not SENDER_EMAIL or not SENDER_PASSWORD or not RECIPIENT_EMAIL:
   raise ValueError("Missing required email credentials in GitHub environment.")
